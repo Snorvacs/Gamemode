@@ -1,0 +1,7 @@
+"wowwhatsthis"
+{
+	"base" "base"
+	"title" "wowwhatsthis"
+	"maps" "^rp_"
+	"menusystem" "1"
+}

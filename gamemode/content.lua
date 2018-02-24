@@ -1,0 +1,1 @@
+resource.AddFile( "materials/rp/checker.png" )
