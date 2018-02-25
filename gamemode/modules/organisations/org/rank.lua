@@ -6,12 +6,17 @@ exports["Rank"] = Rank
 function Rank:__ctor()
 end
 
-function Rank:getParent()
+function Rank:getParents()
+end
+
+function Rank:addParent()
+end
 
 function Rank:getChildren()
 end
 
 function Rank:addChild(childId)
+end
 
 local RankingTree = runtime.oop.create("RankingTree")
 exports["RankingTree"] = RankingTree
@@ -43,22 +48,60 @@ function RankingTree:addRank(rankId, parentId)
     local rank = not parentId and self.root or Rank:__new()
 
     if parentId then
-        rank:setParent(parentId)
+        rank:addParent(parentId)
         self.ranks[parentId]:addChild(rankId)
     end
 
     self.ranks[rankId] = rank
+
+    return rank
 end
 
-function RankingTree:insertRank(rankId, parentId)
-    local newTree = 
+function RankingTree:insertRank(rankId, parentId, childIds)
+    assert(not self:doesInsertionCreateCycle(parentId, childIds), "Adding rankId to the graph would create a cycle")
+    for k, v in pairs(childIds) do
+        assert(self.ranks[childId], "An invalid identifier for a child was supplied")
+    end
+    assert(self.ranks[parentId], "An invalid identifer for the parent was supplied")
+
+    local rank = Rank:__new()
+    self.ranks[rankId] = rank
+    rank:addParent(parentId)
+
+    for k, v in pairs(childIds) do
+        rank:addChild(v)
+        self.ranks[v]:addParent(rankId)
+    end
+
+    return rank
 end
 
--- Remove a rank and all of its children
+-- Remove a rank and remove it as a parent from all of its children
 function RankingTree:removeRank()
 end
 
--- We want ranks to be stored in a tree, not a graph.
+function RankingTree:doesInsertionCreateCycle(parentId, childIds)
+    -- Firstly check if any of the children are an ancestor of the parent.
+    -- As the vertice is being inserted into a tree, an ancestor of the parent will also be its ancestor.
+    -- If it is then the graph will become cyclic when the vertice is inserted and we should create an error.
+
+    local hasCycle = false
+    local function findChildren(vertexIds)
+        for k, vertexId in pairs(vertexIds) do
+            if vertexId == parentId then
+                hasCycle = true
+                return
+            end
+            findChildren(self.Ranks[vertexId]:getChildren())
+        end
+    end
+
+    findChildren(childIds)
+
+    return hasCycle
+end
+
+-- We want ranks to be stored in a tree, not a graph with cycles.
 -- Otherwise it will likely be confusing for those that run an organisation
-function RankingTree:hasCyclicDependency(newTree)
+function RankingTree:isAcyclic()
 end
