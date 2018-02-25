@@ -4,18 +4,24 @@ local Rank = runtime.oop.create("Rank")
 exports["Rank"] = Rank
 
 function Rank:__ctor()
+    self.parents = {}
+    self.children = {}
 end
 
 function Rank:getParents()
+    return self.parents
 end
 
-function Rank:addParent()
+function Rank:addParent(parentId)
+    table.insert(self.parents, parent)
 end
 
 function Rank:getChildren()
+    return self.children
 end
 
 function Rank:addChild(childId)
+    table.insert(self.children, childId)
 end
 
 local RankingTree = runtime.oop.create("RankingTree")
