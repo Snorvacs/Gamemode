@@ -94,6 +94,8 @@ runtime.internal.installedPaths = {
 	"__modules/%s/init.lua",
 }
 
+runtime.internal.gmPath = ""
+
 if os.getenv and os.getenv("LUA_EXTENDED_PACKAGE") then
 	for path in os.getenv("LUA_EXTENDED_PACKAGE"):gmatch("[^;]+") do
 		runtime.internal.installedPaths[#runtime.internal.installedPaths + 1] = path
@@ -172,6 +174,34 @@ function runtime.require(name)
 	end
 
 	error("Cannot find package '"..name.."'")
+end
+
+function runtime.setGmPath(path)
+	runtime.internal.gmPath = path
+end
+
+function runtime.getGmPath()
+	return runtime.internal.gmPath
+end
+
+function runtime.gmRequire(name)
+	local name,filename,isRelative = runtime.normalizePath(name)
+	if runtime.__packages[name] then return runtime.__packages[name] end
+	
+	for i,pathfmt in ipairs(runtime.internal.filePaths) do
+		local fmt = string.format(runtime.internal.gmPath .. "/" .. pathfmt,name,filename)
+
+		local found,suc,ret = runtime.internal.require(fmt)
+
+		if found or (not tostring(ret):match("File not found in compiled filetable!")) then
+			if suc then
+				runtime.__packages[name] = ret
+				return ret
+			else
+				error(ret)
+			end
+		end
+	end
 end
 
 runtime.oop = {}
