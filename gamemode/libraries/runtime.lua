@@ -19,6 +19,15 @@ if CompileString then
 			return false,fn
 		end
 	end
+	loadfile = function(filepath)
+		local fileContents = file.Read(filepath, "LUA")
+		if fileContents then
+			-- The path of the file will be the identity
+			return load(fileContents, filepath)
+		else
+			return false
+		end
+	end
 end
 
 runtime.sources = {}
