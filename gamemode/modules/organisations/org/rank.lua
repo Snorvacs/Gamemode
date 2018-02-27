@@ -134,6 +134,10 @@ function RankingTree:removeRank(rankId)
     until not found
 end
 
+function RankingTree:getRanks()
+    return self.ranks
+end
+
 function RankingTree:getRank(rankId)
     return self.ranks[rankId]
 end
