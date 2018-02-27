@@ -116,6 +116,7 @@ function RankingTree:removeRank(rankId)
 
     local found = false
     repeat
+        found = false
         for k, v in pairs(self.ranks) do
             if table.Count(v:getParents()) == 0 and v ~= self.root then
                 for child, _ in pairs(v:getChildren()) do
