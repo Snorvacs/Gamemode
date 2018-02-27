@@ -12,12 +12,20 @@ function Rank:getParents()
     return self.parents
 end
 
+function Rank:hasParent(parentId)
+    return self.parents[parentId]
+end
+
 function Rank:addParent(parentId)
     self.parents[parentId] = true
 end
 
 function Rank:getChildren()
     return self.children
+end
+
+function Rank:hasChild(childId)
+    return self.children[childId]
 end
 
 function Rank:addChild(childId)
