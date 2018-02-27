@@ -20,6 +20,10 @@ function Rank:addParent(parentId)
     self.parents[parentId] = true
 end
 
+function Rank:removeParent(parentId)
+    self.parents[parentId] = nil
+end
+
 function Rank:getChildren()
     return self.children
 end
@@ -30,6 +34,10 @@ end
 
 function Rank:addChild(childId)
     self.children[childId] = true
+end
+
+function Rank:removeChild(childId)
+    self.children[childId] = nil
 end
 
 local RankingTree = runtime.oop.create("RankingTree")
