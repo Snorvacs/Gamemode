@@ -81,6 +81,7 @@ function RankingTree:insertRank(rankId, parentId, childIds)
     local rank = Rank:__new()
     self.ranks[rankId] = rank
     rank:addParent(parentId)
+    self.ranks[parentId]:addChild(rankId)
 
     for k, v in pairs(childIds) do
         rank:addChild(v)
