@@ -134,6 +134,10 @@ function RankingTree:removeRank(rankId)
     until not found
 end
 
+function RankingTree:getRank(rankId)
+    return self.ranks[rankId]
+end
+
 function RankingTree:doesInsertionCreateCycle(parentId, childIds)
     -- Firstly check if any of the children are an ancestor of the parent.
     -- As the vertice is being inserted into a tree, an ancestor of the parent will also be its ancestor.
