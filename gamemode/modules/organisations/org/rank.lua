@@ -13,7 +13,7 @@ function Rank:getParents()
 end
 
 function Rank:addParent(parentId)
-    table.insert(self.parents, parent)
+    self.parents[parentId] = true
 end
 
 function Rank:getChildren()
@@ -21,7 +21,7 @@ function Rank:getChildren()
 end
 
 function Rank:addChild(childId)
-    table.insert(self.children, childId)
+    self.children[childId] = true
 end
 
 local RankingTree = runtime.oop.create("RankingTree")
