@@ -1,4 +1,4 @@
-GM.Name = "wowwhatsthis?"
+GM.Name = "wowwhatsthis"
 GM.Author = "Badger"
 GM.Website = "http://colossalgamingau.com"
 GM.TeamBased = false
@@ -43,3 +43,5 @@ include( "libraries/gmhook.lua" )
 include( "modules/skills/load.lua" )
 include( "modules/jobs/load.lua" )
 include( "modules/inventory/load.lua" )
+
+GM.Runtime.require("./modules/organisations/organisations.lua")

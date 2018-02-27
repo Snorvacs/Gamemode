@@ -1,6 +1,6 @@
 local runtime, exports = ...
-
-local Org = runtime.require("./org").Org
+print("test")
+local Org = runtime.require("./org/org.lua").Org
 
 local Organisations = runtime.oop.create("Organisations")
 exports["organisations"] = Organisations
