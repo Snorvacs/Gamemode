@@ -95,6 +95,7 @@ function RankingTree:insertRank(rankId, parentId, childIds)
         local child = self.ranks[childId]
         
         if child:hasParent(parentId) then
+            self.ranks[parentId]:removeChild(childId)
             child:removeParent(parentId)
         end
 
