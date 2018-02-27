@@ -107,7 +107,25 @@ function RankingTree:insertRank(rankId, parentId, childIds)
 end
 
 -- Remove a rank and remove it as a parent from all of its children
-function RankingTree:removeRank()
+function RankingTree:removeRank(rankId)
+    
+    for k, v in pairs(self.ranks[rankId]:getChildren()) do
+        self.ranks[v]:removeParent(rankId)
+    end
+    self.ranks[rankId] = nil
+
+    local found = false
+    repeat
+        for k, v in pairs(self.ranks) do
+            if table.Count(v:getParents()) == 0 and v ~= self.root then
+                for child, _ in pairs(v:getChildren()) do
+                    self.ranks[child]:removeParent(k)
+                end
+                self.ranks[k] = nil
+                found = true
+            end
+        end
+    until not found
 end
 
 function RankingTree:doesInsertionCreateCycle(parentId, childIds)
