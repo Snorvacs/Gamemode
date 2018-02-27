@@ -44,12 +44,12 @@ function runtime.internal.require(path)
 	local fileData = file.Read(path, "GAME")
 	if not fileData then return false, false end
 	local fn = CompileString(fileData, path, false)
-	if not isfunction(fn) then return false, false, fn end
+	if not isfunction(fn) then return false, fn end
 
 	local exports = {}
 	local success, err = xpcall(fn,
 	function(err)
-		print("Error loading module "..name)
+		print("Error loading module " .. path)
 		print(debug.traceback(err))
 		return err
 	end, runtime, exports)
