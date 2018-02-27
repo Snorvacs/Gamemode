@@ -158,4 +158,5 @@ end
 -- We want ranks to be stored in a tree, not a graph with cycles.
 -- Otherwise it will likely be confusing for those that run an organisation
 function RankingTree:isAcyclic()
+    -- TODO: Implement
 end
