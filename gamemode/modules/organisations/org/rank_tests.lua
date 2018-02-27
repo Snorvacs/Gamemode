@@ -1,8 +1,9 @@
 local rt = GM.Runtime.require("./rank.lua").RankingTree
-local rtTest = rt:__new()
 
 
 -- Tests for RankingTree:addRank --
+local rtTest = rt:__new()
+
 local default = rtTest:addRank("default")
 local secondRank = rtTest:addRank("second_rank", "default")
 
