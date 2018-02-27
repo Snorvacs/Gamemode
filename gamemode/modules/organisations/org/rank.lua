@@ -53,7 +53,7 @@ function RankingTree:addRank(rankId, parentId)
     assert(not self.ranks[rankId], "A rank with this Id already exists inside of the tree")
     assert(parentId or not self.root, "A root node already already exists on this tree")
     assert(isstring(rankId), "Ranks can only be created with a string as its identifier")
-    assert(isstring(parentId), "Ranks can only be created with a string as its identifier")
+    assert(not parentId or isstring(parentId), "Ranks can only be created with a string as its identifier")
 
     if not parentId then
         self.root = Rank:__new()
