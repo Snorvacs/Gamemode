@@ -50,8 +50,8 @@ end
 -- There's no way we can create a cyclic dependency in this function.
 function RankingTree:addRank(rankId, parentId)
     assert(rankId, "Attempted to create a rank with an invalid Id")
-    assert(self.ranks[rankId], "A rank with this Id already exists inside of the tree")
-    assert(not parentId and self.root, "A root node already already exists on this tree")
+    assert(not self.ranks[rankId], "A rank with this Id already exists inside of the tree")
+    assert(parentId or not self.root, "A root node already already exists on this tree")
     assert(isstring(rankId), "Ranks can only be created with a string as its identifier")
     assert(isstring(parentId), "Ranks can only be created with a string as its identifier")
 
