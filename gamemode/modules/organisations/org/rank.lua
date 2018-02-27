@@ -109,8 +109,8 @@ end
 -- Remove a rank and remove it as a parent from all of its children
 function RankingTree:removeRank(rankId)
     
-    for k, v in pairs(self.ranks[rankId]:getChildren()) do
-        self.ranks[v]:removeParent(rankId)
+    for child, _ in pairs(self.ranks[rankId]:getChildren()) do
+        self.ranks[child]:removeParent(rankId)
     end
     self.ranks[rankId] = nil
 
