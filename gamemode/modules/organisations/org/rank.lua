@@ -112,6 +112,11 @@ function RankingTree:removeRank(rankId)
     for child, _ in pairs(self.ranks[rankId]:getChildren()) do
         self.ranks[child]:removeParent(rankId)
     end
+
+    for parent, _ in pairs(self.ranks[rankId]:getParents()) do
+        self.ranks[parent]:removeChild(rankId)
+    end
+
     self.ranks[rankId] = nil
 
     local found = false
