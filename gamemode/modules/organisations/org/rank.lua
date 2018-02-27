@@ -106,7 +106,7 @@ function RankingTree:doesInsertionCreateCycle(parentId, childIds)
                 hasCycle = true
                 return
             end
-            findChildren(self.Ranks[vertexId]:getChildren())
+            findChildren(self.ranks[vertexId]:getChildren())
         end
     end
 
