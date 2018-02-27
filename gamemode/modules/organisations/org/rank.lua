@@ -6,6 +6,7 @@ exports["Rank"] = Rank
 function Rank:__ctor()
     self.parents = {}
     self.children = {}
+    self.permissions = {}
 end
 
 function Rank:getParents()
@@ -38,6 +39,24 @@ end
 
 function Rank:removeChild(childId)
     self.children[childId] = nil
+end
+
+function Rank:setPermission(permission, value)
+    assert(isbool(value))
+
+    self.permissions[permission] = value
+end
+
+function rank:getPermissions()
+    return self.permissions
+end
+
+function rank:hasPermission(permission)
+    return self.permissions[permission]
+end
+
+function rank:removePermission()
+    self.permissions[permission] = nil
 end
 
 local RankingTree = runtime.oop.create("RankingTree")
