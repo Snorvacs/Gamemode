@@ -66,7 +66,7 @@ end
 function RankingTree:insertRank(rankId, parentId, childIds)
     assert(not self:doesInsertionCreateCycle(parentId, childIds), "Adding rankId to the graph would create a cycle")
     for k, v in pairs(childIds) do
-        assert(self.ranks[childId], "An invalid identifier for a child was supplied")
+        assert(self.ranks[v], "An invalid identifier for a child was supplied")
     end
     assert(self.ranks[parentId], "An invalid identifer for the parent was supplied")
 
