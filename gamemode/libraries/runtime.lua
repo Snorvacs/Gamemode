@@ -6,200 +6,80 @@ local runtime = {}
 runtime.version = 20170509
 
 local debug = debug
-
-local load = load
-
-if CompileString then
-	load = function(code,ident)
-		local fn = CompileString(code,ident,false)
-
-		if type(fn) == "function" then
-			return fn
-		else
-			return false,fn
-		end
-	end
-	loadfile = function(filepath)
-		local fileContents = file.Read(filepath, "LUA")
-		if fileContents then
-			-- The path of the file will be the identity
-			return load(fileContents, filepath)
-		else
-			return false
-		end
-	end
-end
-
-runtime.sources = {}
-runtime.__rtlFn = debug.getinfo(1,"f").func
-runtime.sources[runtime.__rtlFn] = "runtime"
-
-function runtime.load(code,ident)
-	return runtime.bind(load(code,ident),runtime)
-end
-
-function runtime.source(extraDepth)
-	extraDepth = extraDepth or 1
-	local depth,info = 0
-
-	repeat
-		info = debug.getinfo(extraDepth + depth,"f")
-		depth = depth + 1
-	until info and (info.func ~= runtime.__rtlFn) and runtime.sources[info.func] or not info
-
-	return info and runtime.sources[info.func] and runtime.sources[info.func]:match("^(.+[/\\]).-$") or ""
-end
-
-function runtime.setSource(src)
-	local fn = debug.getinfo(2,"f").func
-	runtime.sources[fn] = src
-end
-
-function runtime.loadfile(path)
-	local fullPath = runtime.source(3)..path
-	local func = loadfile(fullPath,fullPath)
-	if func then
-		runtime.sources[func] = fullPath
-		return runtime.bind(func,runtime)
-	end
-
-	func = loadfile(path,path)
-	if func then
-		runtime.sources[func] = path
-		return runtime.bind(func,runtime)
-	end
-end
-
-function runtime.bind(fn,self)
-	return function(...) return fn(self,...) end
-end
-
--- [[ package ]]
-
-runtime.__packages = {}
-
 runtime.internal = {}
 
-runtime.internal.filePaths = {
-	"%s",
-	"%s.lua",
-	"%s/init.lua",
-	"%s/%s.lua",
-}
+function runtime.internal.parseCallInfo(callInfo)
+	local isFile = string.EndsWith(callInfo.source, ".lua")
 
-runtime.internal.installedPaths = {
-	"__modules/%s",
-	"__modules/%s.lua",
-	"__modules/%s/%s.lua",
-	"__modules/%s/init.lua",
-}
-
-runtime.internal.gmPath = ""
-
-if os.getenv and os.getenv("LUA_EXTENDED_PACKAGE") then
-	for path in os.getenv("LUA_EXTENDED_PACKAGE"):gmatch("[^;]+") do
-		runtime.internal.installedPaths[#runtime.internal.installedPaths + 1] = path
+	if isFile then
+		local stack = {}
+		for i in callInfo.source:gsub("\\", "/"):gmatch("[^/]+") do
+			stack[#stack + 1] = i
+		end
+		return true, table.concat(stack, "/", 1, #stack - 1):sub(2, -1)
+	else
+		return isFile, callInfo.source:sub(2, -1)
 	end
 end
 
-function runtime.internal.require(name)
-	local suc1,fn = pcall(runtime.loadfile,name)
-	if not suc1 then return false,false,fn end
-	local mod = {}
-	local suc2,err = xpcall(fn,function(err)
-		print("Error loading module "..name)
-		print(debug.traceback(err))
-	end,mod)
-	if not suc2 then return false,true,err end
-	return true,true,mod
-end
+function runtime.internal.parseFilePath(path)
+	local isRelative, fileName, normalisedPath = false, "", ""
 
-function runtime.normalizePath(name)
-	name = name:gsub("\\","/")
+	isRelative = path:sub(1,1) == "."
 
 	local stack = {}
-	local isRelative = false
-	if name:sub(1,1) == "." then isRelative = true end
-
-	for segment in name:gmatch("[^/]+") do
-		if segment == "." then
-			-- nothing
-		elseif (segment == "..") and (stack[#stack] ~= nil) then
+	for i in path:gsub("\\", "/"):gmatch("[^/]+") do
+		if i == "." then
+		elseif i == ".." then
 			stack[#stack] = nil
 		else
-			stack[#stack + 1] = segment
+			stack[#stack + 1] = i
 		end
 	end
 
-	return table.concat(stack,"/"),stack[#stack],isRelative
+	return isRelative, stack[#stack], table.concat(stack, "/")
 end
 
-function runtime.require(name)
-	local name,filename,isRelative = runtime.normalizePath(name)
+function runtime.internal.require(path)
+	local fileData = file.Read(path, "GAME")
+	if not fileData then return false, false end
+	local fn = CompileString(fileData, path, false)
+	if not isfunction(fn) then return false, false, fn end
 
-	if runtime.__packages[name] then return runtime.__packages[name] end
+	local exports = {}
+	local success, err = xpcall(fn,
+	function(err)
+		print("Error loading module "..name)
+		print(debug.traceback(err))
+		return err
+	end, runtime, exports)
 
-	if isRelative then
-		-- file module
-		for i,pathfmt in ipairs(runtime.internal.filePaths) do
-			local fmt = string.format(pathfmt,name,filename)
-
-			local found,suc,ret = runtime.internal.require(fmt)
-
-			if found or (not tostring(ret):match("File not found in compiled filetable!")) then
-				if suc then
-					runtime.__packages[name] = ret
-					return ret
-				else
-					error(ret)
-				end
-			end
-		end
+	if not success then
+		return false, err
 	else
-		-- installed module
-		for i,pathfmt in ipairs(runtime.internal.installedPaths) do
-			local fmt = string.format(pathfmt,name,filename)
-
-			local found,suc,ret = runtime.internal.require(fmt)
-
-			if found or (not tostring(ret):match("File not found in compiled filetable!")) then
-				if suc then
-					runtime.__packages[name] = ret
-					return ret
-				else
-					error(ret)
-				end
-			end
-		end
+		return true, false, exports
 	end
-
-	error("Cannot find package '"..name.."'")
 end
 
-function runtime.setGmPath(path)
-	runtime.internal.gmPath = path
-end
+-- Have a similar behaviour to requiring in ES 6
+function runtime.require(path)
+	local isFile, src = runtime.internal.parseCallInfo(debug.getinfo(2))
+	local isRelative, fileName, normalisedPath = runtime.internal.parseFilePath(path)
 
-function runtime.getGmPath()
-	return runtime.internal.gmPath
-end
+	if isRelative and isFile then
+		local success, err, exports = false, ""
+		if src then
+			success, err, exports = runtime.internal.require(src .. "/" .. normalisedPath)
+		else
+			success, err, exports = runtime.internal.require(normalisedPath)
+		end
 
-function runtime.gmRequire(name)
-	local name,filename,isRelative = runtime.normalizePath(name)
-	if runtime.__packages[name] then return runtime.__packages[name] end
-	
-	for i,pathfmt in ipairs(runtime.internal.filePaths) do
-		local fmt = string.format(runtime.internal.gmPath .. "/" .. pathfmt,name,filename)
-
-		local found,suc,ret = runtime.internal.require(fmt)
-
-		if found or (not tostring(ret):match("File not found in compiled filetable!")) then
-			if suc then
-				runtime.__packages[name] = ret
-				return ret
-			else
-				error(ret)
-			end
+		if success then
+			return exports
+		elseif not success and err then
+			error(err)
+		elseif not success then
+			error("File not found")
 		end
 	end
 end
